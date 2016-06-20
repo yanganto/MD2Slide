@@ -32,46 +32,28 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
                 f.close()
 
     def slide_content(self, file_name):
-        path = self.translate_path(self.path)
-        f = None
-        if os.path.isdir(path):
-            parts = urllib.parse.urlsplit(self.path)
-            if not parts.path.endswith('/'):
-                # redirect browser - doing basically what apache does
-                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
-                new_parts = (parts[0], parts[1], parts[2] + '/',
-                             parts[3], parts[4])
-                new_url = urllib.parse.urlunsplit(new_parts)
-                self.send_header("Location", new_url)
-                self.end_headers()
-                return None
-            # for index in "index.html", "index.htm":
-            #     index = os.path.join(path, index)
-            #     if os.path.exists(index):
-            #         path = index
-            #         break
-            else:
-                # TODO: write try content here
-                return self.list_directory(path)
-        ctype = self.guess_type(path)
-        try:
-            f = open(path, 'rb')
-        except OSError:
-            self.send_error(HTTPStatus.NOT_FOUND, "File not found")
-            return None
-        try:
-            self.send_response(HTTPStatus.OK)
-            self.send_header("Content-type", ctype)
-            fs = os.fstat(f.fileno())
-            self.send_header("Content-Length", str(fs[6]))
-            self.send_header("Last-Modified", self.date_time_string(fs.st_mtime))
-            self.end_headers()
-            return f
-        except:
-            f.close()
-            raise
+        r = []
+        enc = sys.getfilesystemencoding()
+        r.append('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '
+                 '"http://www.w3.org/TR/html4/strict.dtd">')
+        r.append('<html>\n<head>')
+        r.append('<meta http-equiv="Content-Type" '
+                 'content="text/html; charset=%s">' % enc)
+        r.append('<title>%s</title>\n</head>' % file_name)
+        r.append('<body>\n<h1>%s</h1>' % file_name)
+        r.append('<hr>\n<ul>')
+        r.append('</ul>\n<hr>\n</body>\n</html>\n')
+        encoded = '\n'.join(r).encode(enc, 'surrogateescape')
+        f = io.BytesIO()
+        f.write(encoded)
+        f.seek(0)
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-type", "text/html; charset=%s" % enc)
+        self.send_header("Content-Length", str(len(encoded)))
+        self.end_headers()
+        return f
 
-    def list_directory(self, path, r=[]):
+    def list_directory(self, path):
         """Helper to produce a directory listing md files.
         """
         try:
@@ -89,6 +71,7 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
         displaypath = html.escape(displaypath)
         enc = sys.getfilesystemencoding()
         title = 'Directory listing for %s' % displaypath
+        r = []
         r.append('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '
                  '"http://www.w3.org/TR/html4/strict.dtd">')
         r.append('<html>\n<head>')
