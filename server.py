@@ -20,9 +20,12 @@ remarkjs = ''
 class MDSlideHandler(server.SimpleHTTPRequestHandler):
     def do_GET(self):
         """Serve a GET request."""
-        if self.path.startswith('/slide/'):
-            file_name = self.path.replace('/slide/', '')
-            f = self.slide_content(file_name)
+
+        if self.path.endswith('/slide'):
+            file_name = self.path.replace('/slide', '.md')
+            f = self.slide_content(file_name[1:])
+        elif self.path == '/remark.js':
+            f = self.remark_content()
         else:
             f = self.send_head()
         if f:
@@ -31,18 +34,33 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
             finally:
                 f.close()
 
+    def remark_content(self):
+        r = [remarkjs]
+        enc = sys.getfilesystemencoding()
+        encoded = '\n'.join(r).encode(enc, 'surrogateescape')
+        f = io.BytesIO()
+        f.write(encoded)
+        f.seek(0)
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-type", "application/javascript; charset=%s" % enc)
+        self.send_header("Content-Length", str(len(encoded)))
+        self.end_headers()
+        return f
+
     def slide_content(self, file_name):
         r = []
         enc = sys.getfilesystemencoding()
-        r.append('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '
-                 '"http://www.w3.org/TR/html4/strict.dtd">')
+        r.append('<!DOCTYPE html>')
         r.append('<html>\n<head>')
+        r.append('<title>%s</title>' % file_name)
         r.append('<meta http-equiv="Content-Type" '
-                 'content="text/html; charset=%s">' % enc)
-        r.append('<title>%s</title>\n</head>' % file_name)
-        r.append('<body>\n<h1>%s</h1>' % file_name)
-        r.append('<hr>\n<ul>')
-        r.append('</ul>\n<hr>\n</body>\n</html>\n')
+                 'content="text/html; charset=%s">' % enc)        
+        r.append('<style></style>')
+        r.append('</head>')
+        r.append('<body>')
+        r.append('<script src="/remark.js"></script>')
+        r.append("<script>var slideshow = remark.create({sourceUrl: '/" + file_name + "'});</script>")
+        r.append('</body>\n</html>\n')
         encoded = '\n'.join(r).encode(enc, 'surrogateescape')
         f = io.BytesIO()
         f.write(encoded)
@@ -72,8 +90,9 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
         enc = sys.getfilesystemencoding()
         title = 'Directory listing for %s' % displaypath
         r = []
-        r.append('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '
-                 '"http://www.w3.org/TR/html4/strict.dtd">')
+        # r.append('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '
+        #          '"http://www.w3.org/TR/html4/strict.dtd">')
+        r.append('<!DOCTYPE html>')
         r.append('<html>\n<head>')
         r.append('<meta http-equiv="Content-Type" '
                  'content="text/html; charset=%s">' % enc)
@@ -84,7 +103,7 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
             file_name, extension = os.path.splitext(name)
             if extension.lower() != '.md':
                 continue
-            linkname = '/slide/' + name
+            linkname = name.replace('.md', '/slide')
             r.append('<li><a href="%s">%s</a></li>' % (urllib.parse.quote(linkname, errors='surrogatepass'),
                                                        html.escape(file_name)))
         r.append('</ul>\n<hr>\n</body>\n</html>\n')
@@ -132,7 +151,7 @@ def run(bind='', port=8000, HandlerClass=MDSlideHandler, ServerClass=server.HTTP
 
     server_address = (bind, port)
 
-    HandlerClass.protocol_version = 'HTTP/1/0'
+    HandlerClass.protocol_version = 'HTTP/1/1'
 
     httpd = ServerClass(server_address, HandlerClass)
 
