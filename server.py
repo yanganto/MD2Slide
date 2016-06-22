@@ -15,6 +15,8 @@ import io
 
 md_slide_dir = ''
 remarkjs = ''
+controljs = ''
+controlcss = ''
 
 
 class MDSlideHandler(server.SimpleHTTPRequestHandler):
@@ -25,7 +27,11 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
             file_name = self.path.replace('/slide', '.md')
             f = self.slide_content(file_name[1:])
         elif self.path == '/remark.js':
-            f = self.remark_content()
+            f = self.static_content(remarkjs, 'application/javascript')
+        elif self.path == '/control.js':
+            f = self.static_content(controljs, 'application/javascript')
+        elif self.path == '/control.css':
+            f = self.static_content(controlcss, 'text/css')
         else:
             f = self.send_head()
         if f:
@@ -34,15 +40,15 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
             finally:
                 f.close()
 
-    def remark_content(self):
-        r = [remarkjs]
+    def static_content(self, content, mime_type):
+        r = [content]
         enc = sys.getfilesystemencoding()
         encoded = '\n'.join(r).encode(enc, 'surrogateescape')
         f = io.BytesIO()
         f.write(encoded)
         f.seek(0)
         self.send_response(HTTPStatus.OK)
-        self.send_header("Content-type", "application/javascript; charset=%s" % enc)
+        self.send_header("Content-type", mime_type + "; charset=%s" % enc)
         self.send_header("Content-Length", str(len(encoded)))
         self.end_headers()
         return f
@@ -82,13 +88,8 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
                 "No permission to list directory")
             return None
         list.sort(key=lambda a: a.lower())
-        try:
-            displaypath = urllib.parse.unquote(self.path, errors='surrogatepass')
-        except UnicodeDecodeError:
-            displaypath = urllib.parse.unquote(path)
-        displaypath = html.escape(displaypath)
         enc = sys.getfilesystemencoding()
-        title = 'Directory listing for %s' % displaypath
+        title = 'Markdown to slide'
         r = []
         # r.append('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '
         #          '"http://www.w3.org/TR/html4/strict.dtd">')
@@ -96,17 +97,22 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
         r.append('<html>\n<head>')
         r.append('<meta http-equiv="Content-Type" '
                  'content="text/html; charset=%s">' % enc)
+        r.append('<link rel="stylesheet" type="text/css" href="/control.css" />')
+
         r.append('<title>%s</title>\n</head>' % title)
-        r.append('<body>\n<h1>%s</h1>' % title)
-        r.append('<hr>\n<ul>')
+        r.append('<body>\n<div id="header"><h1 id="title">%s</h1></div>' % title)
+        r.append('<div id="nav">')
         for name in list:
             file_name, extension = os.path.splitext(name)
             if extension.lower() != '.md':
                 continue
             linkname = name.replace('.md', '/slide')
-            r.append('<li><a href="%s">%s</a></li>' % (urllib.parse.quote(linkname, errors='surrogatepass'),
-                                                       html.escape(file_name)))
-        r.append('</ul>\n<hr>\n</body>\n</html>\n')
+            r.append('<button class="slide_btn" data-slide="%s">%s</button>' %
+                     (urllib.parse.quote(linkname, errors='surrogatepass'), html.escape(file_name)))
+        r.append('</div>')
+        r.append('<iframe id="preview" src=""></iframe>')
+        r.append('<script src="/control.js"></script>')
+        r.append('</body>\n</html>\n')
         encoded = '\n'.join(r).encode(enc, 'surrogateescape')
         f = io.BytesIO()
         f.write(encoded)
@@ -144,8 +150,7 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
 
 
 def run(bind='', port=8000, HandlerClass=MDSlideHandler, ServerClass=server.HTTPServer):
-    if not remarkjs:
-        update_remarkjs(True)
+    update_statics()
     if not md_slide_dir:
         set_dir()
 
@@ -165,15 +170,21 @@ def run(bind='', port=8000, HandlerClass=MDSlideHandler, ServerClass=server.HTTP
         sys.exit(0)
 
 
-def update_remarkjs(fallback=False):
-    if fallback:
-        global remarkjs
-        logging.debug('loading remarkjs fall back')
-        with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'remark-20160618.min.js'), 'r') as f:
-            remarkjs = f.read()
-    else:
-        # TODO: get the latest remark js from github
-        pass
+def update_statics():
+    global remarkjs
+    logging.debug('loading remarkjs fall back')
+    with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'remark-20160618.min.js'), 'r') as f:
+        remarkjs = f.read()
+
+    global controljs
+    logging.debug('loading control.js fall back')
+    with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'control.js'), 'r') as f:
+        controljs= f.read()
+
+    global controlcss
+    logging.debug('loading control.css fall back')
+    with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'control.css'), 'r') as f:
+        controlcss = f.read()
 
 
 def set_dir(dir_path=None):
