@@ -13,10 +13,11 @@ import html
 import posixpath
 import io
 
-md_slide_dir = ''
+md_slide_dir = '/home/yanganto/Notes/MyTalk'
 remarkjs = ''
 controljs = ''
 controlcss = ''
+README = ''
 
 
 class MDSlideHandler(server.SimpleHTTPRequestHandler):
@@ -32,6 +33,10 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
             f = self.static_content(controljs, 'application/javascript')
         elif self.path == '/control.css':
             f = self.static_content(controlcss, 'text/css')
+        elif self.path == '/README.md':
+            f = self.static_content(README, 'text/plain')
+        elif self.path.startswith('/help'):
+            f = self.slide_content('README.md#1')
         else:
             f = self.send_head()
         if f:
@@ -110,7 +115,7 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
             r.append('<button class="slide_btn" data-slide="%s">%s</button>' %
                      (urllib.parse.quote(linkname, errors='surrogatepass'), html.escape(file_name)))
         r.append('</div>')
-        r.append('<iframe id="preview" src=""></iframe>')
+        r.append('<iframe id="preview" src="/help#1"></iframe>')
         r.append('<script src="/control.js"></script>')
         r.append('</body>\n</html>\n')
         encoded = '\n'.join(r).encode(enc, 'surrogateescape')
@@ -137,6 +142,8 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
             path = urllib.parse.unquote(path)
         path = posixpath.normpath(path)
         words = path.split('/')
+        if words == ['', 'README.md']:
+            return os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'README.md')
         words = filter(None, words)
         path = md_slide_dir
         for word in words:
@@ -185,6 +192,10 @@ def update_statics():
     logging.debug('loading control.css fall back')
     with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'control.css'), 'r') as f:
         controlcss = f.read()
+
+    global README
+    with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'README.md'), 'r') as f:
+        README = f.read()
 
 
 def set_dir(dir_path=None):
