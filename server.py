@@ -13,10 +13,11 @@ import html
 import posixpath
 import io
 
-md_slide_dir = '/home/yanganto/Notes/MyTalk'
+md_slide_dir = ''
 remarkjs = ''
 controljs = ''
 controlcss = ''
+slidecss = ''
 README = ''
 
 
@@ -33,6 +34,8 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
             f = self.static_content(controljs, 'application/javascript')
         elif self.path == '/control.css':
             f = self.static_content(controlcss, 'text/css')
+        elif self.path == '/slide.css':
+            f = self.static_content(slidecss, 'text/css')
         elif self.path == '/README.md':
             f = self.static_content(README, 'text/plain')
         elif self.path.startswith('/help'):
@@ -66,7 +69,7 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
         r.append('<title>%s</title>' % file_name)
         r.append('<meta http-equiv="Content-Type" '
                  'content="text/html; charset=%s">' % enc)        
-        r.append('<style></style>')
+        r.append('<link rel="stylesheet" type="text/css" href="/slide.css" />')
         r.append('</head>')
         r.append('<body>')
         r.append('<script src="/remark.js"></script>')
@@ -94,18 +97,15 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
             return None
         list.sort(key=lambda a: a.lower())
         enc = sys.getfilesystemencoding()
-        title = 'Markdown to slide'
         r = []
-        # r.append('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '
-        #          '"http://www.w3.org/TR/html4/strict.dtd">')
         r.append('<!DOCTYPE html>')
         r.append('<html>\n<head>')
         r.append('<meta http-equiv="Content-Type" '
                  'content="text/html; charset=%s">' % enc)
         r.append('<link rel="stylesheet" type="text/css" href="/control.css" />')
 
-        r.append('<title>%s</title>\n</head>' % title)
-        r.append('<body>\n<div id="header"><h1 id="title">%s</h1></div>' % title)
+        r.append('<title>MD2Slide</title>\n</head>')
+        r.append('<body  onFocus="on_control(true)" onBlur="on_control(false)">\n<div id="header"><h1 id="title">Slide list</h1></div>')
         r.append('<div id="nav">')
         for name in list:
             file_name, extension = os.path.splitext(name)
@@ -116,6 +116,7 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
                      (urllib.parse.quote(linkname, errors='surrogatepass'), html.escape(file_name)))
         r.append('</div>')
         r.append('<iframe id="preview" src="/help#1"></iframe>')
+        r.append('<div id="info">Control the preview window only</div>')
         r.append('<script src="/control.js"></script>')
         r.append('</body>\n</html>\n')
         encoded = '\n'.join(r).encode(enc, 'surrogateescape')
@@ -179,19 +180,29 @@ def run(bind='', port=8000, HandlerClass=MDSlideHandler, ServerClass=server.HTTP
 
 def update_statics():
     global remarkjs
-    logging.debug('loading remarkjs fall back')
-    with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'remark-20160618.min.js'), 'r') as f:
-        remarkjs = f.read()
-
     global controljs
-    logging.debug('loading control.js fall back')
-    with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'control.js'), 'r') as f:
-        controljs= f.read()
-
     global controlcss
-    logging.debug('loading control.css fall back')
-    with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'control.css'), 'r') as f:
-        controlcss = f.read()
+    global slidecss
+
+    if not remarkjs:
+        logging.debug('loading remarkjs fall back')
+        with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'remark-20160618.min.js'), 'r') as f:
+            remarkjs = f.read()
+
+    if not controljs:
+        logging.debug('loading control.js fall back')
+        with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'control.js'), 'r') as f:
+            controljs= f.read()
+
+    if not controlcss:
+        logging.debug('loading control.css fall back')
+        with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'control.css'), 'r') as f:
+            controlcss = f.read()
+
+    if not slidecss:
+        logging.debug('loading slide.css fall back')
+        with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'slide.css'), 'r') as f:
+            slidecss = f.read()
 
     global README
     with open(os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), 'README.md'), 'r') as f:
@@ -206,6 +217,9 @@ def set_dir(dir_path=None):
         md_slide_dir = os.getcwd()
 
 if __name__ == '__main__':
+    global md_slide_dir
+    if not md_slide_dir:
+        md_slide_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     logging.basicConfig(level=logging.DEBUG, format='LINE %(lineno)-4d  %(levelname)-8s %(message)s',
                         datefmt='%m-%d %H:%M')
     run()

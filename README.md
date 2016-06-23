@@ -1,9 +1,19 @@
 #MD2Slide
 
-- Translate Markdown file to slide
-- Base on [remark.js](https://github.com/gnab/remark) and python
-- Source code []()
-- test with Chromium Version 51.0.2704.84 (64-bit)
+- Getting start
+    - `$ pip install md2slide`
+    - `$ md2slide <directory contain .md>`
+    - open browser and get localhost:8000
+    - **Space**, **PageDown**, **ArrowDown** for next page
+    - **PageUp**, **ArrowUp** for previews page
+    - **Esc** to close the slide and back to menu
+    - click the __Tutorial__ to learn more
+    
+- How did it work?
+    - [remark.js](https://github.com/gnab/remark) and python
+    - how to write markdown file [wiki](https://github.com/gnab/remark/wiki)
+    - Source code [GitHub](https://github.com/yanganto/MD2Slide)  
+
 ---
 
 # MIT License
