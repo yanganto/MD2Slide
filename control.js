@@ -51,7 +51,7 @@ document.querySelector('body').addEventListener('keyup', function(e){
         hide_notes();
     }
 });
-function on_control(status){
+function controlState(status){
     if (status){
         document.bgColor = 'white';
         document.body.style.backgroundColor = 'white';

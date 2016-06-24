@@ -1,7 +1,7 @@
 #MD2Slide
 
 - Getting start
-    - `$ pip install md2slide`
+    - `$ pip3 install md2slide`
     - `$ md2slide <directory contain .md>`
     - open browser and get localhost:8000
     - **Space**, **PageDown**, **ArrowDown** for next page
@@ -10,7 +10,7 @@
     - click the __Tutorial__ to learn more
     
 - How did it work?
-    - [remark.js](https://github.com/gnab/remark) and python
+    - [remark.js](https://github.com/gnab/remark) and python3
     - how to write markdown file [wiki](https://github.com/gnab/remark/wiki)
     - Source code [GitHub](https://github.com/yanganto/MD2Slide)  
 
