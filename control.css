@@ -36,8 +36,15 @@
 	color: white;
     text-shadow: 2px 2px #000;
 }
+#note{
+    width: 90%;
+    padding: 5%;
+}
 .slide_btn{
-    margin: 5%;
+    width: 80%;
+    margin-left: 10%;
+    margin-top: 1%;
+    height: 5%
 }
 body {
     font-family: 'Droid Serif';

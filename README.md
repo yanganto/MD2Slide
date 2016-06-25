@@ -2,12 +2,13 @@
 
 - Getting start
     - `$ pip3 install md2slide`
-    - `$ md2slide <directory contain .md>`
+    - `$ md2slide`
+    - `$ md2slide <directory>`
     - open browser and get localhost:8000
-    - **Space**, **PageDown**, **ArrowDown** for next page
-    - **PageUp**, **ArrowUp** for previews page
-    - **Esc** to close the slide and back to menu
     - click the __Tutorial__ to learn more
+    - **Space**, **PageDown**, **Down** for next page
+    - **PageUp**, **Up** for previews page
+    - **Esc** to close the slide and back to menu
     
 - How did it work?
     - [remark.js](https://github.com/gnab/remark) and python3
