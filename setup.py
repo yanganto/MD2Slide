@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 setup(
     name="md2slide",
     packages=find_packages(),
-    version="0.0.1",
+    version="0.0.2",
     description="",
     author="yanganto",
     author_email="yanganto@gmail.com",

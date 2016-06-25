@@ -1,0 +1,6 @@
+include md2slide/control.css
+include md2slide/control.js
+include md2slide/README.md
+include md2slide/remark-20160618.min.js
+include md2slide/slide.css
+include md2slide/Tutorial.md
