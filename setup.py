@@ -9,14 +9,14 @@ setup(
     author_email="yanganto@gmail.com",
     url="https://github.com/yanganto/MD2Slide",
     download_url="",
-    keywords=["encoding", "i18n", "xml"],
+    keywords=["markdown", "slide"],
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-		"Topic :: Internet :: WWW/HTTP :: HTTP Servers"
+        "Topic :: Internet :: WWW/HTTP :: HTTP Servers"
     ],
     entry_points={'console_scripts': [
-        'md2slide = __main__:main',
+        'md2slide = md2slide.__main__:main',
     ]},
     long_description="""\
 Markdown to Slide package

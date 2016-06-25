@@ -35,7 +35,7 @@ import getopt
 import logging
 import os
 import inspect
-from server import run
+from md2slide.server import run
 
 
 def main(argv=None):

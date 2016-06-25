@@ -6,10 +6,12 @@ var slide_btns = document.querySelectorAll('.slide_btn');
 function show_notes(){
     for (var i=0; i < slide_btns.length; i++)
         slide_btns[i].style.display = 'none';
+    document.getElementById('note').style.display = 'inline';
 }
 function hide_notes(){
     for (var i=0; i < slide_btns.length; i++)
         slide_btns[i].style.display = 'inline';
+    document.getElementById('note').style.display = 'none';
 }
 
 for (var i=0; i < slide_btns.length; i++){
