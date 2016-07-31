@@ -5,13 +5,17 @@ and back to the origin window, namely control window.
 
 You can [download](/Tutorial.md) this Tutorial.md to see how did this work.
 
-???
+??? 60
 
 This is the note area.
 
 In the markdown file, --- is a symbol separate document to the pages of slide,
  
 and that paragraphs in slides after ???  is a note of that page.
+
+The number behind ??? present the seconds you want to spend with this page. 
+
+(It will be a counter in the left bottom.)
 
 If the note area is white (on focus), press Space, Up, Down, PageUP, PageDown to change the slides both in slide window and preview window
 

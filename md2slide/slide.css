@@ -4,6 +4,7 @@
 
 body {
     font-family: 'Droid Serif';
+    text-shadow: 2px 2px 8px #FFF;
 }
 h1, h2, h3 {
     font-family: 'Yanone Kaffeesatz';

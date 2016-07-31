@@ -24,7 +24,6 @@ slidecss = None
 class MDSlideHandler(server.SimpleHTTPRequestHandler):
     def do_GET(self):
         """Serve a GET request."""
-
         if self.path.endswith('/slide'):
             file_name = self.path.replace('/slide', '.md')
             f = self.slide_content(file_name[1:])
@@ -62,6 +61,10 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
         return f
 
     def slide_content(self, file_name):
+        """Trans a markdown file to html slide
+        :param file_name - markdown file
+        :return: html page with markdown js
+        """
         r = []
         enc = sys.getfilesystemencoding()
         r.append('<!DOCTYPE html>')
@@ -86,28 +89,41 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
         return f
 
     def note_content(self, file_name):
+        """parsing the note and each time of page in slide
+        :param file_name - mardown filename
+        :return json string
+        """
         enc = sys.getfilesystemencoding()
-        # notes = {'1': dict(note='hello', time=20)}
+        # notes = {'#1': dict(note='note content', time=20)}
         notes =dict()
         page_num = 1
         has_note = False
         with open(os.path.join(md_slide_dir, file_name)) as md:
             note = ''
+            time = 0
             for line in md:
                 line = line.strip()
                 if line.startswith('---'):
-                    notes['#' + str(page_num)] = dict(note='<p>' + note + '</p>')
+                    notes['#' + str(page_num)] = dict(note='<p>' + note + '</p>', time=time)
                     note = ""
                     page_num += 1
                     has_note = False
                     continue
                 elif line.startswith('???'):
                     has_note = True
+                    time_string = line.replace('?', '').strip()
+                    if time_string:
+                        try:
+                            time = int(time_string)
+                        except ValueError:
+                            time = 0
+                    else:
+                        time = 0
                     continue
                 if has_note:
                     note += line + '<br/>'
             else:
-                notes['#' + str(page_num)] = dict(note='<p>' + note + '</p>')
+                notes['#' + str(page_num)] = dict(note='<p>' + note + '</p>', time=time)
         encoded = json.dumps(notes).encode(enc, 'surrogateescape')
         f = io.BytesIO()
         f.write(encoded)
@@ -120,6 +136,8 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
 
     def list_directory(self, path):
         """Helper to produce a directory listing md files.
+        :param path - the path of directory
+        :return html page
         """
         try:
             list = os.listdir(path)
@@ -150,6 +168,7 @@ class MDSlideHandler(server.SimpleHTTPRequestHandler):
         r.append('</div>')
         r.append('<iframe id="preview" src="/help#1"></iframe>')
         r.append('<div id="info">Control the preview window only<br/>Click left part to control all</div>')
+        r.append('<div id="clock"></div>')
         r.append('<script src="/control.js"></script>')
         r.append('</body>\n</html>\n')
         encoded = '\n'.join(r).encode(enc, 'surrogateescape')
@@ -258,6 +277,7 @@ def update_statics():
         slidecss_path = os.path.join(md_slide_dir, 'slide.css')
     with open(slidecss_path, 'r') as f:
         slidecss = f.read()
+
 
 def set_dir(dir_path=None):
     global md_slide_dir

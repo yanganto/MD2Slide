@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 setup(
     name="md2slide",
     packages=find_packages(),
-    version="0.0.3",
+    version="0.0.4",
     description="A web server serve markdown file to html slide",
     author="yanganto",
     author_email="yanganto@gmail.com",
@@ -17,7 +17,9 @@ setup(
     },
     classifiers=[
         "Programming Language :: Python",
+        "Programming Language :: JavaScript",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Internet :: WWW/HTTP :: HTTP Servers"
     ],
     entry_points={'console_scripts': [

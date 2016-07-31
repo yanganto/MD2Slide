@@ -1,7 +1,16 @@
 var slide = null;
 var note = null;
 var preview_offset = 1;
+var time_remind_this_page = 0;
 var slide_btns = document.querySelectorAll('.slide_btn');
+
+setInterval(function(){
+    if(time_remind_this_page >= 0){
+        document.getElementById('clock').innerHTML = time_remind_this_page + ' second reminded...';
+        time_remind_this_page -= 1;
+    }
+}, 1000);
+
 
 function show_notes(){
     for (var i=0; i < slide_btns.length; i++)
@@ -12,6 +21,7 @@ function hide_notes(){
     for (var i=0; i < slide_btns.length; i++)
         slide_btns[i].style.display = 'inline';
     document.getElementById('note').style.display = 'none';
+    document.getElementById('clock').style.display = 'none';
 }
 
 for (var i=0; i < slide_btns.length; i++){
@@ -38,6 +48,12 @@ document.querySelector('body').addEventListener('keyup', function(e){
             slide.window.location = slide.window.location.pathname + '#' + (parseInt(slide.window.location.hash.replace('#', '')) + 1);
             preview.src = slide.window.location.pathname + '#' + (parseInt(slide.window.location.hash.replace('#', '')) + preview_offset);
             document.getElementById('note').innerHTML = notes[slide.window.location.hash].note;
+            time_remind_this_page = notes[slide.window.location.hash].time;
+            if(time_remind_this_page == 0){
+                document.getElementById('clock').style.display = 'none';
+            }else{
+                document.getElementById('clock').style.display = 'inline';
+            }
         }else{
             var uris = preview.src.split('#')
             preview.src = uris[0] + '#' + (parseInt(uris[1]) + 1);
@@ -49,6 +65,12 @@ document.querySelector('body').addEventListener('keyup', function(e){
             slide.window.location = slide.window.location.pathname + '#' + (parseInt(slide.window.location.hash.replace('#', '')) - 1);
             preview.src = slide.window.location.pathname + '#' + (parseInt(slide.window.location.hash.replace('#', '')) + preview_offset);
             document.getElementById('note').innerHTML = notes[slide.window.location.hash].note;
+            time_remind_this_page = notes[slide.window.location.hash].time;
+            if(notes[slide.window.location.hash].time == 0){
+                document.getElementById('clock').style.display = 'none';
+            }else{
+                document.getElementById('clock').style.display = 'inline';
+            }
         }else{
             var uris = preview.src.split('#')
             preview.src = uris[0] + '#' + (parseInt(uris[1]) - 1);
@@ -75,3 +97,4 @@ function controlState(status){
     }
 }
 document.getElementById('info').style.display = 'none';
+

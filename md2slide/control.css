@@ -40,6 +40,12 @@
     width: 90%;
     padding: 5%;
 }
+#clock{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    display: none;
+}
 .slide_btn{
     width: 80%;
     margin-left: 10%;
